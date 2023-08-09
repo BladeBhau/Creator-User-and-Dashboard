@@ -1,0 +1,169 @@
+PY CODE
+
+from flask import Flask, render_template, request
+import pyodbc
+
+app = Flask(__name__)
+
+# Replace with your SQL Server connection details
+server = 'DESKTOP-7L5H9VI'
+database = 'response'
+driver = '{SQL Server}'
+
+# Function to fetch questions from the database for a given EventID
+def get_questions(event_id):
+    connection_string = f'DRIVER={{SQL Server}};SERVER={server};DATABASE={database};'
+    connection = pyodbc.connect(connection_string)
+    cursor = connection.cursor()
+
+    query = f"SELECT Question, QType FROM EventQ WHERE EventID = {event_id}"
+    cursor.execute(query)
+    questions = [{"question": row.Question, "qtype": row.QType} for row in cursor]
+
+    cursor.close()
+    connection.close()
+    return questions
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        event_id = request.form['event_id']
+        try:
+            event_id = int(event_id)
+            questions = get_questions(event_id)
+            return render_template('questions.html', event_id=event_id, questions=questions)
+        except ValueError:
+            return "Invalid EventID. Please enter a valid numeric EventID."
+
+    return render_template('index.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+templates/Question.html
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Questions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #3498db;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        p {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .rating {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rating input[type="checkbox"] {
+            display: none;
+        }
+
+        .rating label {
+            font-size: 24px;
+            cursor: pointer;
+            color: #f1c40f;
+        }
+
+        .rating label:hover {
+            color: #e67e22;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Event Questions for EventID: {{ event_id }}</h1>
+        <form>
+            {% for question in questions %}
+            <p>{{ question["question"] }}:</p>
+            <p>
+                {% if question["qtype"] == "remark" %}
+                <textarea name="{{ question["question"] }}" rows="3"></textarea>
+                {% elif question["qtype"] == "yesno" %}
+                <input type="radio" name="{{ question["question"] }}" value="Yes"> Yes
+                <input type="radio" name="{{ question["question"] }}" value="No"> No
+                {% elif question["qtype"] == "rating" %}
+                <div class="rating">
+                    <input type="checkbox" id="{{ question["question"] }}_5" name="{{ question["question"] }}" value="5">
+                    <label for="{{ question["question"] }}_5">&#9733;</label>
+                    <input type="checkbox" id="{{ question["question"] }}_4" name="{{ question["question"] }}" value="4">
+                    <label for="{{ question["question"] }}_4">&#9733;</label>
+                    <input type="checkbox" id="{{ question["question"] }}_3" name="{{ question["question"] }}" value="3">
+                    <label for="{{ question["question"] }}_3">&#9733;</label>
+                    <input type="checkbox" id="{{ question["question"] }}_2" name="{{ question["question"] }}" value="2">
+                    <label for="{{ question["question"] }}_2">&#9733;</label>
+                    <input type="checkbox" id="{{ question["question"] }}_1" name="{{ question["question"] }}" value="1">
+                    <label for="{{ question["question"] }}_1">&#9733;</label>
+                </div>
+                {% endif %}
+            </p>
+            {% endfor %}
+        </form>
+    </div>
+</body>
+</html>
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+templates/Index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Question Fetcher</title>
+</head>
+<body>
+    <h1>Enter EventID</h1>
+    <form method="post" action="/">
+        <input type="text" name="event_id" required>
+        <input type="submit" value="Fetch Questions">
+    </form>
+</body>
+</html>
+----------------------------------------------------------------------------------------------------------------------------------------------------
+templates/confirmation.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submission Confirmation</title>
+</head>
+<body>
+    <h1>Answers submitted successfully!</h1>
+    <p>Thank you for submitting your answers.</p>
+</body>
+</html>

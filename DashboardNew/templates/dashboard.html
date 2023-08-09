@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Dashboard - EventID: {{ event_id }}</title>
+</head>
+<body>
+    <h1>Event Dashboard - EventID: {{ event_id }}</h1>
+    <h2>Answers:</h2>
+    <table>
+        <tr>
+            <th>Question</th>
+            <th>Answer</th>
+        </tr>
+        {% for answer in answers %}
+        <tr>
+            <td>{{ answer['question'] }}</td>
+            <td>{{ answer['answer'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

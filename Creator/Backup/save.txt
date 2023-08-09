@@ -1,0 +1,188 @@
+static/styles.css
+
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: linear-gradient(45deg, #3498db, #f39c12, #e74c3c);
+    background-size: 600% 600%;
+    animation: flowing-bg 10s ease infinite;
+  }
+  
+  .container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    border-radius: 5px;
+    background-color: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  h1 {
+    text-align: center;
+  }
+  
+  form {
+    margin-top: 20px;
+  }
+  
+  p {
+    margin-bottom: 10px;
+  }
+  
+  input[type="text"],
+  input[type="number"] {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+  }
+  
+  input[type="text"]:focus,
+  input[type="number"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+  }
+  
+  input[type="radio"] {
+    margin-right: 5px;
+  }
+  
+  input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: auto;
+  }
+  
+  input[type="submit"]:hover {
+    background-color: #3498db;  
+    transform: scale(1.05);
+  }
+  
+  /* Flowing background color animation */
+  @keyframes flowing-bg {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+
+  -------------------------------------------------------------------------------------------------------
+  templates/form.html
+  <!DOCTYPE html>
+<html>
+<head>
+    <title>Question Form</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Enter {{ num_questions }} questions and types</h1>
+        <h2>EventID: {{ current_event_id }}</h2>
+        <form method="post" action="/submit">
+            {% for i in range(1, num_questions+1) %}
+                <p>
+                    EventID: {{ current_event_id }}  Question {{ i }}:
+                    <br>
+                    <input type="text" name="question_{{ i }}" required>
+                </p>
+                <p>
+                    Type {{ i }}:
+                    <input type="radio" name="qtype_{{ i }}" value="remark" required> Remark
+                    <input type="radio" name="qtype_{{ i }}" value="yesno"> Yes/No
+                    <input type="radio" name="qtype_{{ i }}" value="rating"> Rating
+                </p>
+            {% endfor %}
+            <input type="hidden" name="num_questions" value="{{ num_questions }}">
+            <input type="hidden" name="current_event_id" value="{{ current_event_id }}">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</body>
+</html>
+
+---------------------------------------------------
+index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Question Creator</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Event Question Creator</h1>
+        <form method="post" action="/">
+            <p>How many questions do you need?</p>
+            <input type="number" name="num_questions" min="1" max="20" required>
+            <input type="submit" value="Create Form">
+        </form>
+    </div>
+</body>
+</html>
+------------------------------------------------------------
+app.py
+from flask import Flask, render_template, request
+import pyodbc
+
+app = Flask(__name__)
+
+# Replace with your database connection details
+server = 'DESKTOP-7L5H9VI'
+database = 'response'
+driver = '{SQL Server}'
+
+connection_string = f'DRIVER={driver};SERVER={server};DATABASE={database};'
+
+def create_connection():
+    return pyodbc.connect(connection_string)
+
+def get_current_event_id(connection):
+    # Fetch the latest EventID from the EventQ table
+    query = "SELECT MAX(EventID) AS MaxEventID FROM EventQ"
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        row = cursor.fetchone()
+        return row.MaxEventID if row.MaxEventID is not None else 0
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        num_questions = int(request.form['num_questions'])
+        connection = create_connection()
+        current_event_id = get_current_event_id(connection) + 1
+        return render_template('form.html', num_questions=num_questions, current_event_id=current_event_id)
+    return render_template('index.html')
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    num_questions = int(request.form['num_questions'])
+    current_event_id = int(request.form['current_event_id'])
+    connection = create_connection()
+    for i in range(1, num_questions + 1):
+        question = request.form[f'question_{i}']
+        qtype = request.form[f'qtype_{i}']
+        # Save the question, qtype, and current_event_id into the database table named EventQ
+        insert_query = "INSERT INTO EventQ (EventID, Question, QType) VALUES (?, ?, ?)"
+        with connection.cursor() as cursor:
+            cursor.execute(insert_query, (current_event_id, question, qtype))
+            connection.commit()
+
+    return f"Successfully submitted for EventID: {current_event_id}"
+
+if __name__ == '__main__':
+    app.run(debug=True)

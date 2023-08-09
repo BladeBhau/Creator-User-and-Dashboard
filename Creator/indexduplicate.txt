@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Number of Questions</title>
+</head>
+<body>
+    <h1>Enter the number of questions:</h1>
+    <form method="post" action="/">
+        <input type="number" name="num_questions" required>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+BELOW IS FORM.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Question Form</title>
+</head>
+<body>
+    <h1>Enter the questions and types:</h1>
+    <form method="post" action="/submit">
+        {% for i in range(1, num_questions+1) %}
+            <p>
+                Question {{ i }}:<br>
+                <input type="text" name="question_{{ i }}" required>
+            </p>
+            <p>
+                Type {{ i }}:
+                <input type="radio" name="qtype_{{ i }}" value="remark" required> Remark
+                <input type="radio" name="qtype_{{ i }}" value="yesno"> Yes/No
+                <input type="radio" name="qtype_{{ i }}" value="rating"> Rating
+            </p>
+        {% endfor %}
+        <input type="hidden" name="num_questions" value="{{ num_questions }}">
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

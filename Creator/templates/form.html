@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Question Form</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Enter {{ num_questions }} questions and types</h1>
+        <h2>EventID: {{ current_event_id }}</h2>
+        <form method="post" action="/submit">
+            {% for i in range(1, num_questions+1) %}
+                <p>
+                    EventID: {{ current_event_id }}  Question {{ i }}:
+                    <br>
+                    <input type="text" name="question_{{ i }}" required>
+                </p>
+                <p>
+                    Type {{ i }}:
+                    <input type="radio" name="qtype_{{ i }}" value="remark" required> Remark
+                    <input type="radio" name="qtype_{{ i }}" value="yesno"> Yes/No
+                    <input type="radio" name="qtype_{{ i }}" value="rating"> Rating
+                </p>
+            {% endfor %}
+            <input type="hidden" name="num_questions" value="{{ num_questions }}">
+            <input type="hidden" name="current_event_id" value="{{ current_event_id }}">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</body>
+</html>

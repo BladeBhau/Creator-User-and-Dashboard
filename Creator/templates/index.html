@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Question Creator</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Event Question Creator</h1>
+        <form method="post" action="/">
+            <p>How many questions do you need?</p>
+            <input type="number" name="num_questions" min="1" max="20" required>
+            <input type="submit" value="Create Form">
+        </form>
+    </div>
+</body>
+</html>
