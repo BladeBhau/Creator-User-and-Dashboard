@@ -37,50 +37,44 @@
         }
 
         .rating {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+    }
 
-        .rating input[type="checkbox"] {
-            display: none;
-        }
+    .rating input[type="checkbox"] {
+        display: none;
+    }
 
-        .rating label {
-            font-size: 24px;
-            cursor: pointer;
-            color: #f1c40f;
-        }
+    .rating label {
+        font-size: 24px;
+        cursor: pointer;
+        margin-right: 5px;
+        padding: 5px;
+    }
 
-        .rating label:hover {
-            color: #e67e22;
-        }
-        .submit-button {
-            margin-top: 20px;
-            text-align: center;
-        }
+    .rating .star {
+        color: #fff;
+        transition: color 0.2s ease-in-out;
+        outline: 1px solid #333;
+    }
 
-        .submit-button button {
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
+    .rating .number {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #333;
+    }
 
-        .submit-button button:hover {
-            background-color: #2980b9;
-        }
+    .rating input[type="checkbox"]:checked ~ label .star {
+        color: #f1c40f;
+        outline: none;
+    }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Event Questions for EventID: {{ event_id }}</h1>
-        <form method="post" action="/submit">
-            <input type="hidden" name="event_id" value="{{ event_id }}">
+        <form>
             {% for question in questions %}
             <p>{{ question["question"] }}:</p>
             <p>
@@ -91,23 +85,36 @@
                 <input type="radio" name="{{ question["question"] }}" value="No"> No
                 {% elif question["qtype"] == "rating" %}
                 <div class="rating">
-                    <input type="checkbox" id="{{ question["question"] }}_5" name="{{ question["question"] }}" value="5">
-                    <label for="{{ question["question"] }}_5">&#9733;</label>
-                    <input type="checkbox" id="{{ question["question"] }}_4" name="{{ question["question"] }}" value="4">
-                    <label for="{{ question["question"] }}_4">&#9733;</label>
-                    <input type="checkbox" id="{{ question["question"] }}_3" name="{{ question["question"] }}" value="3">
-                    <label for="{{ question["question"] }}_3">&#9733;</label>
-                    <input type="checkbox" id="{{ question["question"] }}_2" name="{{ question["question"] }}" value="2">
-                    <label for="{{ question["question"] }}_2">&#9733;</label>
-                    <input type="checkbox" id="{{ question["question"] }}_1" name="{{ question["question"] }}" value="1">
-                    <label for="{{ question["question"] }}_1">&#9733;</label>
+                    <input type="checkbox" id="rating_1" name="rating" value="1">
+                    <label for="rating_1">
+                        <span class="star">&#9733;</span>
+                        <span class="number">1</span>
+                    </label>
+                    <input type="checkbox" id="rating_2" name="rating" value="2">
+                    <label for="rating_2">
+                        <span class="star">&#9733;</span>
+                        <span class="number">2</span>
+                    </label>
+                    <input type="checkbox" id="rating_3" name="rating" value="3">
+                    <label for="rating_3">
+                        <span class="star">&#9733;</span>
+                        <span class="number">3</span>
+                    </label>
+                    <input type="checkbox" id="rating_4" name="rating" value="4">
+                    <label for="rating_4">
+                        <span class="star">&#9733;</span>
+                        <span class="number">4</span>
+                    </label>
+                    <input type="checkbox" id="rating_5" name="rating" value="5">
+                    <label for="rating_5">
+                        <span class="star">&#9733;</span>
+                        <span class="number">5</span>
+                    </label>
                 </div>
+
                 {% endif %}
             </p>
             {% endfor %}
-            <div class="submit-button">
-                <button type="submit">Submit</button>
-            </div>
         </form>
     </div>
 </body>
